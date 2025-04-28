@@ -794,6 +794,165 @@ POST /api/simulation/panel
 4. Riparimi dhe restore
 5. Root cause analysis
 
+## Instalimi dhe Konfigurimi
+
+### Kërkesat Paraprake
+- Node.js (v16 ose më e re)
+- npm ose yarn
+- Git
+
+### Hapat e Instalimit
+
+1. Klono repository-n:
+```bash
+git clone https://github.com/your-username/sinteza.git
+cd sinteza
+```
+
+2. Instalo dependencies:
+```bash
+npm install
+# ose
+yarn install
+```
+
+3. Krijo file-in e konfigurimit (.env):
+```env
+VITE_API_URL=your_api_url
+VITE_AUTH_KEY=your_auth_key
+```
+
+4. Starto aplikacionin në development:
+```bash
+npm run dev
+# ose
+yarn dev
+```
+
+5. Për build production:
+```bash
+npm run build
+# ose
+yarn build
+```
+
+### Konfigurimi i Vite
+
+#### vite.config.ts
+```typescript
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import path from 'path'
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
+  server: {
+    port: 3000,
+    host: true
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: true,
+    minify: 'terser'
+  }
+})
+```
+
+#### tsconfig.json
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  },
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}
+```
+
+### Scripts të Disponueshëm
+
+```json
+{
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "format": "prettier --write \"src/**/*.{ts,tsx}\""
+  }
+}
+```
+
+### Struktura e Projektit
+```
+sinteza/
+├── src/
+│   ├── components/        # Komponentët e ripërdorshëm
+│   ├── pages/            # Faqet kryesore
+│   ├── hooks/            # Custom React hooks
+│   ├── assets/           # Asetet (imazhe, fonts, etj.)
+│   ├── types/            # TypeScript type definitions
+│   ├── utils/            # Utility functions
+│   ├── services/         # API services
+│   ├── store/            # State management
+│   └── App.tsx           # Komponenti kryesor
+├── public/               # Static assets
+├── index.html           # Entry point
+├── vite.config.ts       # Vite configuration
+├── tsconfig.json        # TypeScript configuration
+├── package.json         # Dependencies and scripts
+└── README.md           # Documentation
+```
+
+### Best Practices për Zhvillim
+
+1. **TypeScript**
+   - Përdorimi i strict mode
+   - Definimi i types për të gjitha variablat
+   - Përdorimi i interfaces dhe types
+   - Validimi i props me PropTypes
+
+2. **React**
+   - Komponentë funksionalë me hooks
+   - Memoization me useMemo dhe useCallback
+   - Error boundaries për error handling
+   - Lazy loading për komponentë të mëdhenj
+
+3. **Performance**
+   - Code splitting me React.lazy()
+   - Image optimization
+   - Bundle analysis
+   - Caching strategies
+
+4. **Testing**
+   - Unit tests me Jest
+   - Integration tests
+   - E2E tests me Cypress
+   - Test coverage reporting
+
 ## Falenderime
 - Shkolla Profesionale Teknike Korçë për bashkëpunimin
 - Të gjithë kontribuesit dhe zhvilluesit
