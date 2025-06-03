@@ -11,30 +11,26 @@ interface WithRoleAccessProps {
 
 function withRoleAccess<P extends object>(
   WrappedComponent: React.ComponentType<P>,
-  { allowedRoles, publicAccess = false }: WithRoleAccessProps
+  config: WithRoleAccessProps
 ) {
   // Përdorim React.memo për të optimizuar performancën
   const WithRoleAccessComponent = React.memo(function WithRoleAccessComponent(props: P) {
-    const { user, isLoading } = useAuth();
+    const { user, loading } = useAuth();
     const location = useLocation();
 
     // Nëse faqja është publike, shfaq komponentin
-    if (publicAccess) {
+    if (config.publicAccess) {
       return <WrappedComponent {...props} />;
     }
 
     // Nëse jemi duke ngarkuar të dhënat, shfaq loading
-    if (isLoading) {
+    if (loading) {
       return (
         <div className="min-h-screen flex items-center justify-center">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center"
-          >
-            <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
             <p className="text-gray-600">Duke kontrolluar aksesin...</p>
-          </motion.div>
+          </div>
         </div>
       );
     }
@@ -50,13 +46,9 @@ function withRoleAccess<P extends object>(
     }
 
     // Nëse përdoruesi nuk ka akses, shfaq mesazh gabimi
-    if (!allowedRoles.includes(user.role)) {
+    if (!config.allowedRoles.includes(user.role)) {
       return (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="min-h-screen flex items-center justify-center p-4"
-        >
+        <div className="min-h-screen flex items-center justify-center p-4">
           <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
             <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <svg className="w-10 h-10 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -76,12 +68,12 @@ function withRoleAccess<P extends object>(
             </p>
             <button
               onClick={() => window.history.back()}
-              className="px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors"
+              className="px-6 py-3 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600 transition-colors"
             >
               Kthehu Mbrapa
             </button>
           </div>
-        </motion.div>
+        </div>
       );
     }
 

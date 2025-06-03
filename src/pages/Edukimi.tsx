@@ -576,17 +576,10 @@ interface QuizProgress {
   score: number;
   totalQuestions: number;
   date: Date;
-  points: number;
-  timeSpent: number;
-  difficulty: string;
 }
 
 interface UserProgress {
-  totalPoints: number;
   completedQuizzes: QuizProgress[];
-  achievements: string[];
-  level: number;
-  nextLevelPoints: number;
 }
 
 const calculatePoints = (score: number, difficulty: string, timeSpent: number) => {
@@ -621,7 +614,6 @@ const loadProgress = (): UserProgress => {
   const savedProgress = localStorage.getItem(STORAGE_KEY);
   if (savedProgress) {
     const parsed = JSON.parse(savedProgress);
-    // Convert date strings back to Date objects
     parsed.completedQuizzes = parsed.completedQuizzes.map((quiz: any) => ({
       ...quiz,
       date: new Date(quiz.date)
@@ -629,11 +621,7 @@ const loadProgress = (): UserProgress => {
     return parsed;
   }
   return {
-    totalPoints: 0,
-    completedQuizzes: [],
-    achievements: [],
-    level: 1,
-    nextLevelPoints: 100
+    completedQuizzes: []
   };
 };
 
@@ -650,32 +638,18 @@ interface DrawingProps {
 // Simulation Types and Interfaces
 interface SimulationState {
   activeSimulation: string;
-  batteryLevel: number;
-  consumption: number;
-  gridConnection: boolean;
-  inverterEfficiency: number;
   temperature: number;
   shadingPercentage: number;
   panelType: string;
   roofAngle: number;
-  systemSize: number;
-  monthlyBill: number;
-  energyPrice: number;
 }
 
 const initialSimulationState: SimulationState = {
   activeSimulation: 'panel',
-  batteryLevel: 80,
-  consumption: 500,
-  gridConnection: true,
-  inverterEfficiency: 96,
   temperature: 25,
   shadingPercentage: 0,
   panelType: 'mono',
-  roofAngle: 30,
-  systemSize: 5,
-  monthlyBill: 150,
-  energyPrice: 0.12
+  roofAngle: 30
 };
 
 const Edukimi: React.FC = () => {
@@ -1236,42 +1210,21 @@ const Edukimi: React.FC = () => {
   };
 
   const handleQuizComplete = () => {
-    const timeSpent = (Date.now() - quizStartTime) / 1000;
-    const averageTimePerQuestion = timeSpent / currentCategoryQuestions.length;
-    
-    const earnedPoints = calculatePoints(
-      score,
-      currentQuestionData.difficulty,
-      averageTimePerQuestion
-    );
-
     const newQuizProgress: QuizProgress = {
       category: selectedCategory,
       score: score,
       totalQuestions: currentCategoryQuestions.length,
-      date: new Date(),
-      points: earnedPoints,
-      timeSpent: timeSpent,
-      difficulty: currentQuestionData.difficulty
+      date: new Date()
     };
 
     const newProgress = {
       ...userProgress,
-      totalPoints: userProgress.totalPoints + earnedPoints,
-      completedQuizzes: [...userProgress.completedQuizzes, newQuizProgress],
-      level: calculateLevel(userProgress.totalPoints + earnedPoints),
-      nextLevelPoints: calculateNextLevelPoints(userProgress.totalPoints + earnedPoints)
+      completedQuizzes: [...userProgress.completedQuizzes, newQuizProgress]
     };
 
     setUserProgress(newProgress);
     saveProgress(newProgress);
     setQuizCompleted(true);
-
-    const oldLevel = calculateLevel(userProgress.totalPoints);
-    const newLevel = calculateLevel(userProgress.totalPoints + earnedPoints);
-    if (newLevel > oldLevel) {
-      console.log(`Congratulations! You reached level ${newLevel}!`);
-    }
   };
 
   // Modify the quiz dashboard header to show level and progress
@@ -1280,29 +1233,6 @@ const Edukimi: React.FC = () => {
       <div>
         <h2 className="text-2xl font-bold text-[#00b894] mb-2">Qendra e Kuizeve</h2>
         <p className="text-gray-600">Zgjidh një kategori për të filluar mësimin</p>
-      </div>
-      <div className="flex items-center gap-8">
-        <div className="text-center">
-          <p className="text-3xl font-bold text-[#00b894]">{userProgress.totalPoints}</p>
-          <p className="text-sm text-gray-600">Pikë Totale</p>
-        </div>
-        <div className="text-center">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">🏆</span>
-            <p className="text-3xl font-bold text-[#fab32b]">Niveli {userProgress.level}</p>
-          </div>
-          <div className="w-32 h-2 bg-gray-100 rounded-full mt-2">
-            <div 
-              className="h-full bg-gradient-to-r from-[#fab32b] to-[#f39c12] rounded-full"
-              style={{ 
-                width: `${(userProgress.totalPoints % 100) / 100 * 100}%`
-              }}
-            />
-          </div>
-          <p className="text-xs text-gray-500 mt-1">
-            {userProgress.nextLevelPoints - userProgress.totalPoints} pikë deri në nivelin tjetër
-          </p>
-        </div>
       </div>
     </div>
   );
@@ -1332,39 +1262,14 @@ const Edukimi: React.FC = () => {
             <span>Përgjigje të sakta</span>
             <span className="font-semibold">{score}/{currentCategoryQuestions.length}</span>
           </div>
-          <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-            <span>Pikë bazë</span>
-            <span className="font-semibold">{score * 10}</span>
-          </div>
-          <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-            <span>Bonus vështirësie</span>
-            <span className="font-semibold text-[#00b894]">
-              {currentQuestionData.difficulty === 'easy' ? '+0%' :
-               currentQuestionData.difficulty === 'medium' ? '+50%' :
-               '+100%'}
-            </span>
-          </div>
-          <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-            <span>Bonus kohe</span>
-            <span className="font-semibold text-[#fab32b]">
-              {(Date.now() - quizStartTime) / 1000 / currentCategoryQuestions.length < 30 ? '+20%' : '+0%'}
-            </span>
-          </div>
-          <div className="flex justify-between items-center p-4 bg-[#00b894]/10 rounded-lg">
-            <span className="font-medium">Totali i pikëve</span>
-            <span className="font-bold text-[#00b894]">
-              +{calculatePoints(
-                score,
-                currentQuestionData.difficulty,
-                (Date.now() - quizStartTime) / 1000 / currentCategoryQuestions.length
-              )}
-            </span>
-          </div>
         </div>
 
         <div className="flex gap-3">
           <motion.button
-            onClick={() => setShowQuizDashboard(true)}
+            onClick={() => {
+              setShowQuizDashboard(true);
+              setQuizCompleted(false);
+            }}
             className="flex-1 py-2 px-4 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -1372,7 +1277,10 @@ const Edukimi: React.FC = () => {
             Kthehu te Qendra
           </motion.button>
           <motion.button
-            onClick={() => handleCategoryChange(selectedCategory)}
+            onClick={() => {
+              handleCategoryChange(selectedCategory);
+              setQuizCompleted(false);
+            }}
             className="flex-1 py-2 px-4 bg-gradient-to-r from-[#00b894] to-[#00a884] text-white rounded-xl font-medium hover:shadow-lg transition-all"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -1510,8 +1418,7 @@ const Edukimi: React.FC = () => {
 
                           <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
                             <span>{getTotalQuestions(key)} Pyetje</span>
-                            <span>{Math.round(getTotalQuestions(key) * 0.6)} Pikë Maksimale</span>
-                  </div>
+                          </div>
 
                           <motion.button
                             onClick={() => startQuiz(key)}
@@ -1750,17 +1657,13 @@ const Edukimi: React.FC = () => {
                             <span>⏱️</span>
                             {video.duration}
                           </span>
-                          <span className="text-[#e67e22] font-medium flex items-center gap-1">
-                            <span>⭐</span>
-                            +{video.points} pikë
-                          </span>
+                          {watchedVideos.includes(video.id) && (
+                            <div className="mt-3 text-sm text-green-600 flex items-center gap-2 bg-green-50 px-3 py-1 rounded-full w-fit">
+                              <span>✓</span>
+                              <span>E përfunduar</span>
+                            </div>
+                          )}
                         </div>
-                        {watchedVideos.includes(video.id) && (
-                          <div className="mt-3 text-sm text-green-600 flex items-center gap-2 bg-green-50 px-3 py-1 rounded-full w-fit">
-                            <span>✓</span>
-                            <span>E përfunduar</span>
-                          </div>
-                        )}
                   </div>
                 </motion.div>
               ))}
@@ -1772,507 +1675,149 @@ const Edukimi: React.FC = () => {
               <div className="space-y-8">
                 <div className="flex justify-between items-center mb-8">
                   <h2 className="text-2xl font-bold bg-gradient-to-r from-[#fab32b] to-[#f39c12] bg-clip-text text-transparent">
-                    Simulimet Profesionale
+                    Simulimi i Panelit Solar
                   </h2>
                   <div className="text-sm text-gray-500">
-                    Eksploro dhe analizo sistemet solare në detaje
+                    Eksploro dhe analizo sistemin solar në detaje
                   </div>
-                </div>
-
-                {/* Simulation Navigation */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  {[
-                    { id: 'panel', title: 'Paneli Solar', icon: '☀️', desc: 'Simulim i prodhimit të energjisë' },
-                    { id: 'battery', title: 'Sistemi i Baterisë', icon: '🔋', desc: 'Analiza e ruajtjes së energjisë' },
-                    { id: 'consumption', title: 'Konsumi', icon: '📊', desc: 'Monitorimi i konsumit të energjisë' },
-                    { id: 'roi', title: 'ROI Calculator', icon: '💰', desc: 'Llogaritja e kthimit të investimit' }
-                  ].map(sim => (
-                    <motion.button
-                      key={sim.id}
-                      onClick={() => setActiveSimulation(sim.id)}
-                      className={`p-4 rounded-xl border-2 transition-all duration-300 ${
-                        activeSimulation === sim.id
-                          ? 'border-[#fab32b] bg-[#fab32b]/5 shadow-lg'
-                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                      }`}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <span className="text-2xl mb-2 block">{sim.icon}</span>
-                      <h3 className="font-semibold mb-1">{sim.title}</h3>
-                      <p className="text-sm text-gray-600">{sim.desc}</p>
-                    </motion.button>
-                  ))}
                 </div>
 
                 {/* Main Simulation Area */}
                 <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                  {activeSimulation === 'panel' && (
-                    <div className="p-6 space-y-6">
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        {/* Canvas Container */}
-                        <div className="bg-gray-50 rounded-xl border-2 border-gray-100 p-4 min-h-[400px] flex items-center justify-center">
-                          <div className="w-full h-[400px] relative">
-                            <canvas
-                              ref={canvasRef}
-                              className="w-full h-full"
-                              style={{ maxWidth: '100%', maxHeight: '100%' }}
+                  <div className="p-6 space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                      {/* Canvas Container */}
+                      <div className="bg-gray-50 rounded-xl border-2 border-gray-100 p-4 min-h-[400px] flex items-center justify-center">
+                        <div className="w-full h-[400px] relative">
+                          <canvas
+                            ref={canvasRef}
+                            className="w-full h-full"
+                            style={{ maxWidth: '100%', maxHeight: '100%' }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Controls */}
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700">
+                              Lloji i Panelit
+                            </label>
+                            <select
+                              value={panelType}
+                              onChange={(e) => setPanelType(e.target.value)}
+                              className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#fab32b]"
+                            >
+                              <option value="mono">Monokristalor</option>
+                              <option value="poly">Polikristalor</option>
+                              <option value="thin">Thin Film</option>
+                            </select>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700">
+                              Temperatura ({temperature}°C)
+                            </label>
+                            <input
+                              type="range"
+                              min="15"
+                              max="45"
+                              value={temperature}
+                              onChange={(e) => setTemperature(Number(e.target.value))}
+                              className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer"
                             />
                           </div>
                         </div>
 
-                        {/* Controls */}
-                        <div className="space-y-6">
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <label className="block text-sm font-medium text-gray-700">
-                                Lloji i Panelit
-                              </label>
-                              <select
-                                value={panelType}
-                                onChange={(e) => setPanelType(e.target.value)}
-                                className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#fab32b]"
-                              >
-                                <option value="mono">Monokristalor</option>
-                                <option value="poly">Polikristalor</option>
-                                <option value="thin">Thin Film</option>
-                              </select>
-                            </div>
-                            <div className="space-y-2">
-                              <label className="block text-sm font-medium text-gray-700">
-                                Temperatura ({temperature}°C)
-                              </label>
-                              <input
-                                type="range"
-                                min="15"
-                                max="45"
-                                value={temperature}
-                                onChange={(e) => setTemperature(Number(e.target.value))}
-                                className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer"
-                              />
-                            </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700">
+                              Këndi i Çatisë ({roofAngle}°)
+                            </label>
+                            <input
+                              type="range"
+                              min="0"
+                              max="45"
+                              value={roofAngle}
+                              onChange={(e) => setRoofAngle(Number(e.target.value))}
+                              className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer"
+                            />
                           </div>
-
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <label className="block text-sm font-medium text-gray-700">
-                                Këndi i Çatisë ({roofAngle}°)
-                              </label>
-                              <input
-                                type="range"
-                                min="0"
-                                max="45"
-                                value={roofAngle}
-                                onChange={(e) => setRoofAngle(Number(e.target.value))}
-                                className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer"
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <label className="block text-sm font-medium text-gray-700">
-                                Hijezimi ({shadingPercentage}%)
-                              </label>
-                              <input
-                                type="range"
-                                min="0"
-                                max="100"
-                                value={shadingPercentage}
-                                onChange={(e) => setShadingPercentage(Number(e.target.value))}
-                                className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <label className="block text-sm font-medium text-gray-700">
-                                Drejtimi
-                              </label>
-                              <select
-                                value={direction}
-                                onChange={(e) => setDirection(e.target.value)}
-                                className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#fab32b]"
-                              >
-                                <option value="Jug">Jug</option>
-                                <option value="Lindje">Lindje</option>
-                                <option value="Perëndim">Perëndim</option>
-                                <option value="Veri">Veri</option>
-                              </select>
-                            </div>
-                            <div className="space-y-2">
-                              <label className="block text-sm font-medium text-gray-700">
-                                Kushtet Atmosferike
-                              </label>
-                              <select
-                                value={weather}
-                                onChange={(e) => setWeather(e.target.value)}
-                                className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#fab32b]"
-                              >
-                                <option value="Diell">Me diell</option>
-                                <option value="Re">Me re</option>
-                                <option value="Shi">Me shi</option>
-                              </select>
-                            </div>
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700">
+                              Hijezimi ({shadingPercentage}%)
+                            </label>
+                            <input
+                              type="range"
+                              min="0"
+                              max="100"
+                              value={shadingPercentage}
+                              onChange={(e) => setShadingPercentage(Number(e.target.value))}
+                              className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer"
+                            />
                           </div>
                         </div>
-                      </div>
 
-                      {/* Results Dashboard */}
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-gray-50 rounded-xl p-6">
-                        <div className="bg-white rounded-lg p-4 shadow-sm">
-                          <h4 className="text-sm font-medium text-gray-600 mb-2">Prodhimi Aktual</h4>
-                          <p className="text-2xl font-bold text-[#fab32b]">{production} kWh</p>
-                        </div>
-                        <div className="bg-white rounded-lg p-4 shadow-sm">
-                          <h4 className="text-sm font-medium text-gray-600 mb-2">Eficienca</h4>
-                          <p className="text-2xl font-bold text-[#00b894]">
-                            {Math.round((production / 5.0) * 100)}%
-                          </p>
-                        </div>
-                        <div className="bg-white rounded-lg p-4 shadow-sm">
-                          <h4 className="text-sm font-medium text-gray-600 mb-2">Humbjet nga Temperatura</h4>
-                          <p className="text-2xl font-bold text-[#e74c3c]">
-                            {Math.round((temperature - 25) * 0.4)}%
-                          </p>
-                        </div>
-                        <div className="bg-white rounded-lg p-4 shadow-sm">
-                          <h4 className="text-sm font-medium text-gray-600 mb-2">Prodhimi Vjetor</h4>
-                          <p className="text-2xl font-bold text-[#0984e3]">
-                            {Math.round(production * 365 * 0.75)} kWh
-                          </p>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700">
+                              Drejtimi
+                            </label>
+                            <select
+                              value={direction}
+                              onChange={(e) => setDirection(e.target.value)}
+                              className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#fab32b]"
+                            >
+                              <option value="Jug">Jug</option>
+                              <option value="Lindje">Lindje</option>
+                              <option value="Perëndim">Perëndim</option>
+                              <option value="Veri">Veri</option>
+                            </select>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700">
+                              Kushtet Atmosferike
+                            </label>
+                            <select
+                              value={weather}
+                              onChange={(e) => setWeather(e.target.value)}
+                              className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#fab32b]"
+                            >
+                              <option value="Diell">Me diell</option>
+                              <option value="Re">Me re</option>
+                              <option value="Shi">Me shi</option>
+                            </select>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  )}
 
-                  {activeSimulation === 'battery' && (
-                    <div className="p-6 space-y-6">
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        {/* Battery Visualization */}
-                        <div className="bg-gray-50 rounded-xl border-2 border-gray-100 p-4 min-h-[400px] flex items-center justify-center">
-                          <div className="w-full h-[400px] relative">
-                            <canvas
-                              ref={canvasRef}
-                              className="w-full h-full"
-                              style={{ maxWidth: '100%', maxHeight: '100%' }}
-                            />
-                          </div>
-                        </div>
-
-                        {/* Battery Controls */}
-                        <div className="space-y-6">
-                          <div className="space-y-4">
-                            <div className="space-y-2">
-                              <label className="block text-sm font-medium text-gray-700">
-                                Niveli i Baterisë ({batteryLevel}%)
-                              </label>
-                              <input
-                                type="range"
-                                min="0"
-                                max="100"
-                                value={batteryLevel}
-                                onChange={(e) => setBatteryLevel(Number(e.target.value))}
-                                className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer"
-                              />
-                            </div>
-
-                            <div className="space-y-2">
-                              <label className="block text-sm font-medium text-gray-700">
-                                Konsumi Aktual ({consumptionValue} kW)
-                              </label>
-                              <input
-                                type="range"
-                                min="0"
-                                max="10"
-                                step="0.1"
-                                value={consumptionValue}
-                                onChange={(e) => handleConsumptionChange(Number(e.target.value))}
-                                className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer"
-                              />
-                            </div>
-
-                            <div className="flex items-center justify-between">
-                              <label className="text-sm font-medium text-gray-700">
-                                Lidhja me Rrjetin
-                              </label>
-                    <button
-                                onClick={() => setGridConnection(!gridConnection)}
-                                className={`px-6 py-2 rounded-xl font-medium transition-all ${
-                                  gridConnection
-                                    ? 'bg-green-500 text-white'
-                                    : 'bg-gray-200 text-gray-700'
-                                }`}
-                              >
-                                {gridConnection ? 'E Lidhur' : 'E Shkëputur'}
-                    </button>
-                </div>
-              </div>
-
-                          {/* Battery Stats */}
-                          <div className="bg-gray-50 rounded-xl p-6">
-                            <h3 className="text-lg font-semibold mb-4">Statistikat e Sistemit</h3>
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="bg-white rounded-lg p-4 shadow-sm">
-                                <h4 className="text-sm font-medium text-gray-600 mb-2">Kapaciteti i Mbetur</h4>
-                                <p className="text-2xl font-bold text-green-500">{batteryLevel}%</p>
-                        </div>
-                              <div className="bg-white rounded-lg p-4 shadow-sm">
-                                <h4 className="text-sm font-medium text-gray-600 mb-2">Koha e Mbetur</h4>
-                                <p className="text-2xl font-bold text-[#0984e3]">
-                                  {Math.round((batteryLevel / 100 * 10) / consumptionValue * 60)} min
-                                </p>
+                    {/* Results Dashboard */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-gray-50 rounded-xl p-6">
+                      <div className="bg-white rounded-lg p-4 shadow-sm">
+                        <h4 className="text-sm font-medium text-gray-600 mb-2">Prodhimi Aktual</h4>
+                        <p className="text-2xl font-bold text-[#fab32b]">{production} kWh</p>
                       </div>
-                              <div className="bg-white rounded-lg p-4 shadow-sm">
-                                <h4 className="text-sm font-medium text-gray-600 mb-2">Statusi</h4>
-                                <p className="text-2xl font-bold text-[#00b894]">
-                                  {batteryLevel > 20 ? 'Optimal' : 'I Ulët'}
-                                </p>
-                        </div>
-                              <div className="bg-white rounded-lg p-4 shadow-sm">
-                                <h4 className="text-sm font-medium text-gray-600 mb-2">Konsumi Total</h4>
-                                <p className="text-2xl font-bold text-[#e74c3c]">
-                                  {(consumptionValue * 24).toFixed(1)} kWh/ditë
-                                </p>
-                        </div>
+                      <div className="bg-white rounded-lg p-4 shadow-sm">
+                        <h4 className="text-sm font-medium text-gray-600 mb-2">Eficienca</h4>
+                        <p className="text-2xl font-bold text-[#00b894]">
+                          {Math.round((production / 5.0) * 100)}%
+                        </p>
+                      </div>
+                      <div className="bg-white rounded-lg p-4 shadow-sm">
+                        <h4 className="text-sm font-medium text-gray-600 mb-2">Humbjet nga Temperatura</h4>
+                        <p className="text-2xl font-bold text-[#e74c3c]">
+                          {Math.round((temperature - 25) * 0.4)}%
+                        </p>
+                      </div>
+                      <div className="bg-white rounded-lg p-4 shadow-sm">
+                        <h4 className="text-sm font-medium text-gray-600 mb-2">Prodhimi Vjetor</h4>
+                        <p className="text-2xl font-bold text-[#0984e3]">
+                          {Math.round(production * 365 * 0.75)} kWh
+                        </p>
                       </div>
                     </div>
                   </div>
-              </div>
-                    </div>
-                  )}
-
-                  {activeSimulation === 'consumption' && (
-                    <div className="p-6 space-y-6">
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        {/* Consumption Graph */}
-                        <div className="bg-gray-50 rounded-xl border-2 border-gray-100 p-4 min-h-[400px] flex items-center justify-center">
-                          <div className="w-full h-[400px] relative">
-                            <canvas
-                              ref={canvasRef}
-                              className="w-full h-full"
-                              style={{ maxWidth: '100%', maxHeight: '100%' }}
-                            />
-        </div>
-                        </div>
-
-                        {/* Consumption Analysis */}
-                        <div className="space-y-6">
-                          <div className="bg-gray-50 rounded-xl p-6">
-                            <h3 className="text-lg font-semibold mb-4">Analiza e Konsumit</h3>
-                            <div className="space-y-4">
-                              <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-white rounded-lg p-4 shadow-sm">
-                                  <h4 className="text-sm font-medium text-gray-600 mb-2">Konsumi Ditor</h4>
-                                  <p className="text-2xl font-bold text-[#0984e3]">{(consumptionValue * 24).toFixed(1)} kWh</p>
-                                </div>
-                                <div className="bg-white rounded-lg p-4 shadow-sm">
-                                  <h4 className="text-sm font-medium text-gray-600 mb-2">Konsumi Mujor</h4>
-                                  <p className="text-2xl font-bold text-[#0984e3]">{(consumptionValue * 24 * 30).toFixed(1)} kWh</p>
-                                </div>
-                              </div>
-
-                              <div className="space-y-4">
-                                <h4 className="font-medium text-gray-700">Shpërndarja e Konsumit</h4>
-                                <div className="space-y-3">
-                                  <div className="space-y-2">
-                                    <div className="flex justify-between items-center">
-                                      <span className="text-sm text-gray-600">Pajisjet Elektrike</span>
-                                      <span className="text-sm font-medium">45%</span>
-                                    </div>
-                                    <div className="w-full h-2 bg-gray-200 rounded-full">
-                                      <div className="w-[45%] h-full bg-blue-500 rounded-full"/>
-                                    </div>
-                                  </div>
-                                  <div className="space-y-2">
-                                    <div className="flex justify-between items-center">
-                                      <span className="text-sm text-gray-600">Ngrohje/Ftohje</span>
-                                      <span className="text-sm font-medium">30%</span>
-                                    </div>
-                                    <div className="w-full h-2 bg-gray-200 rounded-full">
-                                      <div className="w-[30%] h-full bg-green-500 rounded-full"/>
-                                    </div>
-                                  </div>
-                                  <div className="space-y-2">
-                                    <div className="flex justify-between items-center">
-                                      <span className="text-sm text-gray-600">Ndriçimi</span>
-                                      <span className="text-sm font-medium">15%</span>
-                                    </div>
-                                    <div className="w-full h-2 bg-gray-200 rounded-full">
-                                      <div className="w-[15%] h-full bg-yellow-500 rounded-full"/>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {activeSimulation === 'roi' && (
-                    <div className="p-6 space-y-6">
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        {/* ROI Calculator Controls */}
-                        <div className="space-y-6">
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <label className="block text-sm font-medium text-gray-700">
-                                Madhësia e Sistemit (kW)
-                              </label>
-                              <input
-                                type="number"
-                                min="1"
-                                max="100"
-                                value={simulationState.systemSize}
-                                onChange={(e) => setSimulationState({
-                                  ...simulationState,
-                                  systemSize: Number(e.target.value)
-                                })}
-                                className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#fab32b]"
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <label className="block text-sm font-medium text-gray-700">
-                                Fatura Mujore (€)
-                              </label>
-                              <input
-                                type="number"
-                                min="0"
-                                value={simulationState.monthlyBill}
-                                onChange={(e) => setSimulationState({
-                                  ...simulationState,
-                                  monthlyBill: Number(e.target.value)
-                                })}
-                                className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#fab32b]"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <label className="block text-sm font-medium text-gray-700">
-                                Çmimi i Energjisë (€/kWh)
-                              </label>
-                              <input
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                value={simulationState.energyPrice}
-                                onChange={(e) => setSimulationState({
-                                  ...simulationState,
-                                  energyPrice: Number(e.target.value)
-                                })}
-                                className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#fab32b]"
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <label className="block text-sm font-medium text-gray-700">
-                                Eficienca e Inverterit (%)
-                              </label>
-                              <input
-                                type="number"
-                                min="80"
-                                max="100"
-                                value={simulationState.inverterEfficiency}
-                                onChange={(e) => setSimulationState({
-                                  ...simulationState,
-                                  inverterEfficiency: Number(e.target.value)
-                                })}
-                                className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#fab32b]"
-                              />
-                            </div>
-                          </div>
-
-                          {/* Results Dashboard */}
-                          <div className="bg-gray-50 rounded-xl p-6">
-                            <h3 className="text-lg font-semibold mb-4">Analiza e Investimit</h3>
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="bg-white rounded-lg p-4 shadow-sm">
-                                <h4 className="text-sm font-medium text-gray-600 mb-2">Kosto Totale</h4>
-                                <p className="text-2xl font-bold text-[#e74c3c]">
-                                  {(simulationState.systemSize * 800).toFixed(0)}€
-                                </p>
-                              </div>
-                              <div className="bg-white rounded-lg p-4 shadow-sm">
-                                <h4 className="text-sm font-medium text-gray-600 mb-2">Kursimi Vjetor</h4>
-                                <p className="text-2xl font-bold text-[#00b894]">
-                                  {(simulationState.monthlyBill * 12).toFixed(0)}€
-                                </p>
-                              </div>
-                              <div className="bg-white rounded-lg p-4 shadow-sm">
-                                <h4 className="text-sm font-medium text-gray-600 mb-2">Periudha e Kthimit</h4>
-                                <p className="text-2xl font-bold text-[#0984e3]">
-                                  {((simulationState.systemSize * 800) / (simulationState.monthlyBill * 12)).toFixed(1)} vite
-                                </p>
-                              </div>
-                              <div className="bg-white rounded-lg p-4 shadow-sm">
-                                <h4 className="text-sm font-medium text-gray-600 mb-2">ROI 25-Vjeçar</h4>
-                                <p className="text-2xl font-bold text-[#fab32b]">
-                                  {(((simulationState.monthlyBill * 12 * 25) - (simulationState.systemSize * 800)) / (simulationState.systemSize * 800) * 100).toFixed(0)}%
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* ROI Graph */}
-                        <div className="bg-gray-50 rounded-xl p-6">
-                          <h3 className="text-lg font-semibold mb-4">Parashikimi Financiar 25-Vjeçar</h3>
-                          <div className="space-y-4">
-                            <div className="relative pt-4">
-                              <div className="flex justify-between text-sm text-gray-600 mb-2">
-                                <span>Investimi Fillestar</span>
-                                <span className="font-medium text-[#e74c3c]">
-                                  -{(simulationState.systemSize * 800).toFixed(0)}€
-                                </span>
-                              </div>
-                              <div className="h-2 bg-[#e74c3c] rounded-full" />
-                            </div>
-
-                            <div className="relative pt-4">
-                              <div className="flex justify-between text-sm text-gray-600 mb-2">
-                                <span>Kursimet Totale</span>
-                                <span className="font-medium text-[#00b894]">
-                                  +{(simulationState.monthlyBill * 12 * 25).toFixed(0)}€
-                                </span>
-                              </div>
-                              <div className="h-2 bg-[#00b894] rounded-full" />
-                            </div>
-
-                            <div className="relative pt-4">
-                              <div className="flex justify-between text-sm text-gray-600 mb-2">
-                                <span>Fitimi Net</span>
-                                <span className="font-medium text-[#0984e3]">
-                                  {((simulationState.monthlyBill * 12 * 25) - (simulationState.systemSize * 800)).toFixed(0)}€
-                                </span>
-                              </div>
-                              <div className="h-2 bg-[#0984e3] rounded-full" style={{
-                                width: `${Math.min(100, ((simulationState.monthlyBill * 12 * 25) / (simulationState.systemSize * 800)) * 50)}%`
-                              }} />
-                            </div>
-
-                            <div className="mt-8 p-4 bg-white rounded-lg">
-                              <h4 className="font-medium text-gray-700 mb-3">Pikët Kyçe</h4>
-                              <ul className="space-y-2 text-sm text-gray-600">
-                                <li className="flex items-center gap-2">
-                                  <span className="w-2 h-2 bg-[#fab32b] rounded-full" />
-                                  Kthimi i investimit pas {((simulationState.systemSize * 800) / (simulationState.monthlyBill * 12)).toFixed(1)} vitesh
-                                </li>
-                                <li className="flex items-center gap-2">
-                                  <span className="w-2 h-2 bg-[#00b894] rounded-full" />
-                                  Kursime mujore prej {simulationState.monthlyBill.toFixed(0)}€
-                                </li>
-                                <li className="flex items-center gap-2">
-                                  <span className="w-2 h-2 bg-[#0984e3] rounded-full" />
-                                  Prodhim vjetor prej {(simulationState.systemSize * 1500).toFixed(0)} kWh
-                                </li>
-                              </ul>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             )}

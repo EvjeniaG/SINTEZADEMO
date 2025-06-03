@@ -129,17 +129,10 @@ const Header = () => {
                         </div>
                         <Link
                           to="/profile"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                           onClick={() => setIsProfileMenuOpen(false)}
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         >
                           Profili im
-                        </Link>
-                        <Link
-                          to="/settings"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setIsProfileMenuOpen(false)}
-                        >
-                          Cilësimet
                         </Link>
                         <button
                           onClick={() => {
@@ -221,20 +214,6 @@ const Header = () => {
                       <p className="text-sm font-medium text-gray-900">{user.full_name}</p>
                       <p className="text-xs text-gray-500">{user.email}</p>
                     </div>
-                    <Link
-                      to="/profile"
-                      className="block px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Profili im
-                    </Link>
-                    <Link
-                      to="/settings"
-                      className="block px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Cilësimet
-                    </Link>
                     <button
                       onClick={() => {
                         setIsMobileMenuOpen(false)
@@ -249,14 +228,14 @@ const Header = () => {
                   <>
                     <Link
                       to="/auth?mode=login"
-                      className="block px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+                      className="block px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       Hyr
                     </Link>
                     <Link
                       to="/auth?mode=register"
-                      className="block px-4 py-2 rounded-lg text-sm font-medium bg-emerald-500 text-white hover:bg-emerald-600 transition-colors"
+                      className="block px-4 py-2 rounded-lg text-sm font-medium bg-emerald-500 text-white hover:bg-emerald-600"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       Regjistrohu

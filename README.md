@@ -796,6 +796,13 @@ POST /api/simulation/panel
 
 ## Instalimi dhe Konfigurimi
 
+### Versionet e Përdorura
+- Node.js: v16 ose më e re
+- TypeScript: 5.8.3
+- Vite: 5.4.18
+- React: 18.x
+- Tailwind CSS: 3.x
+
 ### Kërkesat Paraprake
 - Node.js (v16 ose më e re)
 - npm ose yarn
@@ -836,122 +843,216 @@ npm run build
 yarn build
 ```
 
-### Konfigurimi i Vite
+### Gabimet e Zakonshme dhe Zgjidhjet
 
-#### vite.config.ts
-```typescript
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import path from 'path'
+#### 1. Gabime në Instalim
+- **Problem**: `npm install` dështon me gabime të ndryshme
+- **Zgjidhje**: 
+  ```bash
+  npm cache clean --force
+  rm -rf node_modules
+  npm install
+  ```
 
-export default defineConfig({
-  plugins: [react()],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
-  },
+#### 2. Gabime në TypeScript
+- **Problem**: Gabime të kompajlimit të TypeScript
+- **Zgjidhje**:
+  ```bash
+  npm install typescript@5.8.3 --save-dev
+  tsc --init
+  ```
+
+#### 3. Gabime në Vite
+- **Problem**: Serveri nuk starton
+- **Zgjidhje**:
+  ```bash
+  npm install vite@5.4.18 --save-dev
+  npm run dev
+  ```
+
+#### 4. Gabime në Port
+- **Problem**: Porti 3000 është i zënë
+- **Zgjidhje**: Ndrysho portin në vite.config.ts:
+  ```typescript
   server: {
-    port: 3000,
+    port: 3001, // ose ndonjë port tjetër i lirë
     host: true
-  },
-  build: {
-    outDir: 'dist',
-    sourcemap: true,
-    minify: 'terser'
   }
-})
+  ```
+
+#### 5. Gabime në Build
+- **Problem**: Build dështon me gabime të TypeScript
+- **Zgjidhje**:
+  ```bash
+  npm run build -- --force
+  # ose
+  tsc --noEmit && vite build
+  ```
+
+### Komandat e Dobishme
+
+#### TypeScript
+```bash
+# Kompajlo projektin
+tsc
+
+# Kompajlo me watch mode
+tsc --watch
+
+# Shfaq konfigurimin final
+tsc --showConfig
+
+# Krijo tsconfig.json të ri
+tsc --init
 ```
 
-#### tsconfig.json
+#### Vite
+```bash
+# Starto development server
+npm run dev
+
+# Build për production
+npm run build
+
+# Preview build-in e prodhimit
+npm run preview
+
+# Shfaq ndihmën
+npm run dev -- --help
+```
+
+#### NPM
+```bash
+# Pastro cache
+npm cache clean --force
+
+# Instalo dependencies
+npm install
+
+# Update dependencies
+npm update
+
+# Fix vulnerabilities
+npm audit fix
+```
+
+## Konfigurimi i TypeScript
+
+### Opsionet e Kompajlimit
+
+#### Opsionet Bazë
 ```json
 {
   "compilerOptions": {
     "target": "ES2020",
-    "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
-    "skipLibCheck": true,
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"]
-    }
-  },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
-}
-```
-
-### Scripts të Disponueshëm
-
-```json
-{
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "format": "prettier --write \"src/**/*.{ts,tsx}\""
+    "noEmit": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
   }
 }
 ```
 
-### Struktura e Projektit
+#### Opsionet e Rëndësishme
+
+1. **Target dhe Module**
+   - `target`: Versioni i JavaScript-it të prodhuar (ES2020)
+   - `module`: Sistemi i moduleve (ESNext)
+
+2. **Lib dhe JSX**
+   - `lib`: Bibliotekat e përfshira (ES2020, DOM)
+   - `jsx`: Mënyra e përpunimit të JSX (react-jsx)
+
+3. **Strict Mode**
+   - `strict`: Aktivizon të gjitha opsionet e strict mode
+   - `noImplicitAny`: Ndalo përdorimin e any implicit
+   - `strictNullChecks`: Kontrollo për null/undefined
+
+4. **Emit Options**
+   - `noEmit`: Mos prodho output files
+   - `sourceMap`: Krijo source maps
+   - `declaration`: Krijo .d.ts files
+
+5. **Module Resolution**
+   - `moduleResolution`: "bundler" për Vite
+   - `baseUrl`: Rrënja e projektit
+   - `paths`: Alias paths (@/*)
+
+### Komandat e TypeScript
+
+#### Komandat Bazë
+```bash
+# Kompajlo projektin
+tsc
+
+# Kompajlo me watch mode
+tsc --watch
+
+# Shfaq konfigurimin final
+tsc --showConfig
+
+# Krijo tsconfig.json të ri
+tsc --init
 ```
-sinteza/
-├── src/
-│   ├── components/        # Komponentët e ripërdorshëm
-│   ├── pages/            # Faqet kryesore
-│   ├── hooks/            # Custom React hooks
-│   ├── assets/           # Asetet (imazhe, fonts, etj.)
-│   ├── types/            # TypeScript type definitions
-│   ├── utils/            # Utility functions
-│   ├── services/         # API services
-│   ├── store/            # State management
-│   └── App.tsx           # Komponenti kryesor
-├── public/               # Static assets
-├── index.html           # Entry point
-├── vite.config.ts       # Vite configuration
-├── tsconfig.json        # TypeScript configuration
-├── package.json         # Dependencies and scripts
-└── README.md           # Documentation
+
+#### Opsionet e Avancuara
+```bash
+# Kompajlo me strict mode
+tsc --strict
+
+# Kompajlo me source maps
+tsc --sourceMap
+
+# Kompajlo me declarations
+tsc --declaration
+
+# Kompajlo me module resolution të veçantë
+tsc --moduleResolution bundler
 ```
 
-### Best Practices për Zhvillim
+### Gabimet e Zakonshme të TypeScript
 
-1. **TypeScript**
-   - Përdorimi i strict mode
-   - Definimi i types për të gjitha variablat
-   - Përdorimi i interfaces dhe types
-   - Validimi i props me PropTypes
+#### 1. Gabime të Tipizimit
+- **Problem**: `Type 'any' is not assignable to type 'string'`
+- **Zgjidhje**: Aktivizo strict mode dhe përcakto tipet e sakta
 
-2. **React**
-   - Komponentë funksionalë me hooks
-   - Memoization me useMemo dhe useCallback
-   - Error boundaries për error handling
-   - Lazy loading për komponentë të mëdhenj
+#### 2. Gabime të Moduleve
+- **Problem**: `Cannot find module 'react'`
+- **Zgjidhje**: Instalo @types/react dhe verifiko paths në tsconfig.json
 
-3. **Performance**
-   - Code splitting me React.lazy()
-   - Image optimization
-   - Bundle analysis
-   - Caching strategies
+#### 3. Gabime të JSX
+- **Problem**: `JSX element implicitly has type 'any'`
+- **Zgjidhje**: Aktivizo jsx: "react-jsx" në tsconfig.json
 
-4. **Testing**
-   - Unit tests me Jest
-   - Integration tests
-   - E2E tests me Cypress
-   - Test coverage reporting
+#### 4. Gabime të Importit
+- **Problem**: `Module not found: Error: Can't resolve './Component'`
+- **Zgjidhje**: Verifiko moduleResolution dhe paths në tsconfig.json
+
+### Best Practices për TypeScript
+
+1. **Tipizimi i Fortë**
+   - Përdor interfaces për objektet
+   - Përdor type aliases për union types
+   - Përdor generics për funksione të ripërdorshme
+
+2. **Organizimi i Kodit**
+   - Krijo type definitions të veçanta
+   - Përdor barrel files për eksportime
+   - Grupo types të ngjashme
+
+3. **Error Handling**
+   - Përdor try/catch me type guards
+   - Përdor discriminated unions
+   - Përdor never type për unreachable code
+
+4. **Performance**
+   - Përdor const assertions
+   - Minimizo përdorimin e any
+   - Përdor readonly properties
 
 ## Falenderime
 - Shkolla Profesionale Teknike Korçë për bashkëpunimin

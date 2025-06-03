@@ -9,6 +9,7 @@ export const useAuth = () => {
 
   const checkUser = async () => {
     try {
+      setLoading(true);
       const session = await getSession();
       setUser(session);
     } catch (error) {
@@ -21,9 +22,11 @@ export const useAuth = () => {
 
   // Listen for auth changes
   useEffect(() => {
+    console.log('useAuth effect running...');
     checkUser();
 
     const handleUserChange = () => {
+      console.log('User change event received');
       checkUser();
     };
 

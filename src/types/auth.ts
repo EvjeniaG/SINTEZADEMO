@@ -33,12 +33,13 @@ export const ROUTE_ACCESS: Record<string, AccessControl> = {
   '/dashboard/alarme': { allowedRoles: ['admin'] },
   '/dashboard/raporte': { allowedRoles: ['admin'] },
   '/dashboard/eksport': { allowedRoles: ['admin'] },
-  '/edukim': { allowedRoles: ['admin', 'mesues', 'nxenes'], publicAccess: true },
-  '/edukim/kuize': { allowedRoles: ['admin', 'mesues', 'nxenes'] },
-  '/edukim/simulime': { allowedRoles: ['admin', 'mesues', 'nxenes'] },
-  '/edukim/ai-tutor': { allowedRoles: ['admin', 'mesues', 'nxenes'] },
-  '/edukim/keshilla': { allowedRoles: ['admin', 'mesues', 'nxenes'] },
+  '/edukimi': { allowedRoles: ['admin', 'mesues', 'nxenes'], publicAccess: true },
+  '/edukimi/kuize': { allowedRoles: ['admin', 'mesues', 'nxenes'] },
+  '/edukimi/simulime': { allowedRoles: ['admin', 'mesues', 'nxenes'] },
+  '/edukimi/ai-tutor': { allowedRoles: ['admin', 'mesues', 'nxenes'] },
+  '/edukimi/keshilla': { allowedRoles: ['admin', 'mesues', 'nxenes'] },
   '/mirembajte': { allowedRoles: ['admin', 'mesues'] },
   '/perdoruesit': { allowedRoles: ['admin'] },
-  '/profili': { allowedRoles: ['admin', 'mesues', 'nxenes'] }
+  '/profile': { allowedRoles: ['admin', 'mesues', 'nxenes'], publicAccess: true },
+  '/settings': { allowedRoles: ['admin', 'mesues', 'nxenes'], publicAccess: true }
 }; 
