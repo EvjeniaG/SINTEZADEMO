@@ -366,7 +366,7 @@ const Home = () => {
                 <div className="aspect-video rounded-2xl overflow-hidden shadow-2xl relative group">
                   <div className="absolute inset-0 bg-gradient-to-br from-sinteza-blue/20 to-transparent"></div>
                   <img 
-                    src="public\shkolla-profesionale-korce.jpeg" 
+                    src="/shkolla-profesionale-korce.jpeg" 
                     alt="Shkolla Profesionale Teknike Korçë" 
                     className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
                   />
